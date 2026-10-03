@@ -1,9 +1,10 @@
 require("dotenv").config();
 const http = require("http");
-const { GoogleGenAI } = require("@google/genai");
 const { connectDB, Hackathon } = require("./hackathon-notify/database");
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY
+const OpenAI = require("openai");
+const ai = new OpenAI({
+    apiKey: process.env.NVIDIA_API_KEY,
+    baseURL: "https://integrate.api.nvidia.com/v1"
 });
 const {
     Client,
@@ -328,42 +329,23 @@ client.on("messageCreate", async (message) => {
     if (message.channel.name !== "ai-chat") return;
     try {
         await message.channel.sendTyping();
-        let response;
-        try {
-            // Main model
-            response = await ai.models.generateContent({
-                model: "gemini-3.8-flash",
-                contents: message.content,
-                config: {
-                    systemInstruction:
-                        "You are a helpful Discord assistant. Give short, clear answers. Avoid unnecessary explanations.",
-                    maxOutputTokens: 150
+        const response = await ai.chat.completions.create({
+            model: "nvidia/nemotron-3.5-lightning-30b-a3b",
+            messages: [
+                {
+                    role: "system",
+                    content:
+                        "You are a helpful Discord assistant. Give short, clear answers. Avoid unnecessary explanations."
+                },
+                {
+                    role: "user",
+                    content: message.content
                 }
-            });
-        } catch (error) {
-            // Fallback model
-            if (error.status === 503) {
-                console.log(
-                    "⚠️ Gemini 3.8 busy. Trying fallback model..."
-                );
-                response = await ai.models.generateContent({
-                    model: "gemini-3.5-flash-lite",
-                    contents: message.content,
-                    config: {
-                        systemInstruction:
-                            "You are a helpful Discord assistant. Give short, clear answers. Avoid unnecessary explanations.",
-                        maxOutputTokens: 150
-                    }
-                });
-            } else {
-                throw error;
-            }
-        }
-        // Safely get Gemini response
-        const replyText =
-            typeof response.text === "function"
-                ? response.text()
-                : response.text;
+            ],
+            max_tokens: 150,
+            temperature: 0.7
+        });
+        const replyText = response.choices[0]?.message?.content;
         if (!replyText) {
             await message.reply(
                 "⚠️ I received an empty response from the AI."
@@ -372,7 +354,7 @@ client.on("messageCreate", async (message) => {
         }
         await message.reply(replyText);
     } catch (error) {
-        console.error("AI Error:", error);
+        console.error("NVIDIA AI Error:", error);
         await message.reply(
             "⚠️ AI is temporarily unavailable. Please try again later."
         );
