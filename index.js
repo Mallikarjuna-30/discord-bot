@@ -331,19 +331,25 @@ client.on("messageCreate", async (message) => {
         await message.channel.sendTyping();
         const response = await ai.chat.completions.create({
             model: "nvidia/nemotron-3.5-lightning-30b-a3b",
+
             messages: [
                 {
                     role: "system",
                     content:
-                        "You are a helpful Discord assistant. Give short, clear answers. Avoid unnecessary explanations."
+                        "You are a helpful Discord assistant. Give short, clear, natural answers. Never show your thinking, reasoning, analysis, or internal steps. Only provide the final answer."
                 },
                 {
                     role: "user",
                     content: message.content
                 }
             ],
+
             max_tokens: 150,
-            temperature: 0.7
+            temperature: 0.7,
+
+            chat_template_kwargs: {
+                enable_thinking: false
+            }
         });
         const replyText = response.choices[0]?.message?.content;
         if (!replyText) {
