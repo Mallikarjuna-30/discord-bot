@@ -1,4 +1,5 @@
 require("dotenv").config();
+const http = require("http");
 const { GoogleGenAI } = require("@google/genai");
 const { connectDB, Hackathon } = require("./hackathon-notify/database");
 const ai = new GoogleGenAI({
@@ -409,6 +410,14 @@ client.on("guildMemberAdd", (member) => {
     channel.send({
         embeds: [welcomeEmbed]
     });
+});
+
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+    res.writeHead(200);
+    res.end("Discord bot is running!");
+}).listen(PORT, "0.0.0.0", () => {
+    console.log(`🌐 Web server running on port ${PORT}`);
 });
 
 client.login(process.env.DISCORD_TOKEN);
