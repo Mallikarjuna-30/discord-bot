@@ -1,11 +1,15 @@
 require("dotenv").config();
 const http = require("http");
+
 const { connectDB, Hackathon } = require("./hackathon-notify/database");
+const { fetchAndSendHackathons } = require("./hackathon-notify/hackathon");
+
 const OpenAI = require("openai");
 const ai = new OpenAI({
     apiKey: process.env.NVIDIA_API_KEY,
     baseURL: "https://integrate.api.nvidia.com/v1"
 });
+
 const {
     Client,
     GatewayIntentBits,
@@ -106,6 +110,10 @@ const rest = new REST({ version: "10" })
 client.once("clientReady", async () => {
     console.log(`🤖 ${client.user.tag} is online!`);
     await connectDB();
+    fetchAndSendHackathons(client, Hackathon);
+    setInterval(() => {
+        fetchAndSendHackathons(client, Hackathon);
+    }, 2 * 60 * 60 * 1000);
     try {
         await rest.put(
             Routes.applicationCommands(client.user.id),
