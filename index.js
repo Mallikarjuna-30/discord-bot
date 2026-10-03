@@ -335,23 +335,29 @@ client.on("messageCreate", async (message) => {
             messages: [
                 {
                     role: "system",
-                    content:
-                        "You are a helpful Discord assistant. Give short, clear, natural answers. Never show your thinking, reasoning, analysis, or internal steps. Only provide the final answer."
+                    content: `
+                        You are a Discord assistant.
+                        IMPORTANT:
+                        - Never show your thinking process.
+                        - Never show analysis or reasoning steps.
+                        - Never say "Here's a thinking process".
+                        - Only output the final answer.
+                        - Keep answers short and natural.
+                        - Use simple formatting when helpful.
+                        `
                 },
                 {
                     role: "user",
                     content: message.content
                 }
             ],
-
-            max_tokens: 150,
-            temperature: 0.7,
-
-            chat_template_kwargs: {
-                enable_thinking: false
-            }
+            max_tokens: 200,
+            temperature: 0.3
         });
-        const replyText = response.choices[0]?.message?.content;
+        let replyText = response.choices[0]?.message?.content || "";
+        replyText = replyText
+            .replace(/<think>[\s\S]*?<\/think>/gi, "")
+            .trim();
         if (!replyText) {
             await message.reply(
                 "⚠️ I received an empty response from the AI."
