@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { GoogleGenAI } = require("@google/genai");
-
+const { connectDB, Hackathon } = require("./hackathon-notify/database");
 const ai = new GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY
 });
@@ -103,7 +103,7 @@ const rest = new REST({ version: "10" })
 
 client.once("clientReady", async () => {
     console.log(`🤖 ${client.user.tag} is online!`);
-
+    await connectDB();
     try {
         await rest.put(
             Routes.applicationCommands(client.user.id),
@@ -208,10 +208,10 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (interaction.commandName === "clear") {
         const amount = interaction.options.getInteger("amount");
-        await interaction.channel.bulkDelete(amount, true);
-        interaction.reply({
-            content: `🧹 Deleted ${amount} messages!`,
-            flags: 64
+        await interaction.deferReply({ ephemeral: true });
+        const deleted = await interaction.channel.bulkDelete(amount, true);
+        await interaction.editReply({
+            content: `🧹 Deleted ${deleted.size} messages!`
         });
     }
     if (interaction.commandName === "warn") {
