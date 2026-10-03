@@ -39,14 +39,13 @@ async function fetchAndSendHackathons(client, Hackathon) {
                     {
                         title: `🎯 ${hackathon.title}`,
                         url: hackathon.url,
-                        description:
-                            "🚀 **New online hackathon is open for registration!**",
+                        description: "🚀 **Online hackathon • Registration open!**",
                         color: 0x5865f2,
                         fields: [
                             {
                                 name: "🏢 Organizer",
                                 value: hackathon.organiser || "Not specified",
-                                inline: false
+                                inline: true
                             },
                             {
                                 name: "🌐 Platform",
@@ -59,8 +58,15 @@ async function fetchAndSendHackathons(client, Hackathon) {
                                 inline: true
                             },
                             {
+                                name: "🟢 Status",
+                                value: "Registration Open",
+                                inline: true
+                            },
+                            {
                                 name: "⏰ Registration Deadline",
-                                value: `<t:${Math.floor(deadline.getTime() / 1000)}:F>\n(<t:${Math.floor(deadline.getTime() / 1000)}:R>)`,
+                                value:
+                                    `<t:${Math.floor(deadline.getTime() / 1000)}:F>\n` +
+                                    `(<t:${Math.floor(deadline.getTime() / 1000)}:R>)`,
                                 inline: false
                             }
                         ],
