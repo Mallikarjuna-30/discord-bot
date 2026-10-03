@@ -329,39 +329,45 @@ client.on("messageCreate", async (message) => {
     if (message.channel.name !== "ai-chat") return;
     try {
         await message.channel.sendTyping();
-        const response = await ai.chat.completions.create({
-            model: "nvidia/nemotron-3.5-lightning-30b-a3b",
-
-            messages: [
-                {
-                    role: "system",
-                    content: `
-                        You are a Discord assistant.
-                        IMPORTANT:
-                        - Never show your thinking process.
-                        - Never show analysis or reasoning steps.
-                        - Never say "Here's a thinking process".
-                        - Only output the final answer.
-                        - Keep answers short and natural.
-                        - Use simple formatting when helpful.
-                        `
+        const response = await fetch(
+            "https://integrate.api.nvidia.com/v1/chat/completions",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.NVIDIA_API_KEY}`
                 },
-                {
-                    role: "user",
-                    content: message.content
-                }
-            ],
-            max_tokens: 200,
-            temperature: 0.3
-        });
-        let replyText = response.choices[0]?.message?.content || "";
+                body: JSON.stringify({
+                    model: "nvidia/nemotron-3.5-lightning-30b-a3b",
+                    messages: [
+                        {
+                            role: "system",
+                            content:
+                                "You are a helpful Discord assistant. Give short, clear, natural answers. Never show your thinking or reasoning. Only provide the final answer."
+                        },
+                        {
+                            role: "user",
+                            content: message.content
+                        }
+                    ],
+                    temperature: 0.3,
+                    max_tokens: 200,
+                    chat_template_kwargs: {
+                        enable_thinking: false
+                    }
+                })
+            }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(JSON.stringify(data));
+        }
+        let replyText = data.choices?.[0]?.message?.content || "";
         replyText = replyText
             .replace(/<think>[\s\S]*?<\/think>/gi, "")
             .trim();
         if (!replyText) {
-            await message.reply(
-                "⚠️ I received an empty response from the AI."
-            );
+            await message.reply("⚠️ I received an empty response from the AI.");
             return;
         }
         await message.reply(replyText);
