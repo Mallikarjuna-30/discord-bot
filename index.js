@@ -106,6 +106,21 @@ const commands = [
 // Register the command
 const rest = new REST({ version: "10" })
     .setToken(process.env.DISCORD_TOKEN);
+client.on("error", error => {
+    console.error("❌ Discord client error:", error);
+});
+
+client.on("shardDisconnect", (event, id) => {
+    console.log(`🔴 Discord disconnected (shard ${id}):`, event.code, event.reason);
+});
+
+client.on("shardReconnecting", id => {
+    console.log(`🟡 Discord reconnecting (shard ${id})...`);
+});
+
+client.on("shardResume", (id, replayedEvents) => {
+    console.log(`🟢 Discord connection resumed (shard ${id}), replayed events: ${replayedEvents}`);
+});
 
 client.once("clientReady", async () => {
     console.log(`🤖 ${client.user.tag} is online!`);

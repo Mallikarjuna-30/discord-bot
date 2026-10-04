@@ -1,10 +1,15 @@
 require("dns").setServers(["8.8.8.8", "1.1.1.1"]);
+const {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle
+} = require("discord.js");
 
 async function fetchAndSendHackathons(client, Hackathon) {
     try {
         // Fetch hackathons from Brabble
         const response = await fetch(
-            "https://brabble.ai/api/listings?hub=hackathons&mode=ONLINE&limit=10",
+            "https://brabble.ai/api/listings?hub=hackathons&mode=ONLINE&limit=20",
             {
                 headers: {
                     "x-api-key": process.env.BRABBLE_API_KEY
@@ -25,6 +30,7 @@ async function fetchAndSendHackathons(client, Hackathon) {
         }
         // Process each hackathon
         for (const hackathon of data.listings) {
+            if (hackathon.prize?.inr === null || hackathon.prize?.inr === undefined) continue;
             const deadline = new Date(hackathon.deadline);
             // Skip expired hackathons
             if (deadline <= new Date()) continue;
@@ -75,6 +81,14 @@ async function fetchAndSendHackathons(client, Hackathon) {
                         },
                         timestamp: new Date()
                     }
+                ],
+                components: [
+                    new ActionRowBuilder().addComponents(
+                        new ButtonBuilder()
+                            .setLabel("🚀 Register Now")
+                            .setStyle(ButtonStyle.Link)
+                            .setURL(hackathon.url)
+                    )
                 ]
             });
             // Save to MongoDB
