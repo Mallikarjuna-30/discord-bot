@@ -233,11 +233,13 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (interaction.commandName === "clear") {
         const amount = interaction.options.getInteger("amount");
-        await interaction.deferReply({ ephemeral: true });
+        if (interaction.replied || interaction.deferred) return;
+        await interaction.deferReply({ flags: 64 });
         const deleted = await interaction.channel.bulkDelete(amount, true);
         await interaction.editReply({
             content: `🧹 Deleted ${deleted.size} messages!`
         });
+        return;
     }
     if (interaction.commandName === "warn") {
         const user = interaction.options.getUser("user");
