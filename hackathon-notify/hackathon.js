@@ -17,6 +17,12 @@ async function fetchAndSendHackathons(client, Hackathon) {
             }
         );
         const data = await response.json();
+        console.log(`🔎 Brabble returned ${data.listings?.length || 0} hackathons`);
+        for (const h of data.listings || []) {
+            console.log(
+                `🎯 ${h.title} | Prize: ${h.prize?.inr} | Deadline: ${h.deadline}`
+            );
+        }
         if (!response.ok) {
             throw new Error(JSON.stringify(data));
         }
