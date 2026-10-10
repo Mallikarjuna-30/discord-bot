@@ -9,7 +9,7 @@ async function fetchAndSendHackathons(client, Hackathon) {
     try {
         // Fetch hackathons from Brabble
         const response = await fetch(
-            "https://brabble.ai/api/listings?hub=hackathons&mode=ONLINE&limit=200",
+            "https://brabble.ai/api/listings?hub=hackathons&mode=ONLINE&limit=2000",
             {
                 headers: {
                     "x-api-key": process.env.BRABBLE_API_KEY
